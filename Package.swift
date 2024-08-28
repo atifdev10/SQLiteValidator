@@ -19,8 +19,9 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-syntax.git", from: "510.0.0"),
+        .package(url: "https://github.com/swiftlang/swift-syntax", from: "510.0.0"),
         .package(url: "https://github.com/stackotter/swift-macro-toolkit", from: "0.0.0"),
+        .package(url: "https://github.com/pointfreeco/swift-macro-testing", from: "0.0.0"),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -30,8 +31,6 @@ let package = Package(
             name: "SQLiteValidatorMacros",
             dependencies: [
                 .product(name: "MacroToolkit", package: "swift-macro-toolkit"),
-                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
-                .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
             ]
         ),
 
@@ -47,6 +46,7 @@ let package = Package(
             dependencies: [
                 "SQLiteValidatorMacros",
                 .product(name: "MacroToolkit", package: "swift-macro-toolkit"),
+                .product(name: "MacroTesting", package: "swift-macro-testing"),
                 .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
             ]
         ),
