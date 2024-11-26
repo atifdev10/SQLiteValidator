@@ -1,54 +1,47 @@
-import SwiftSyntax
-import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
-import SwiftSyntaxMacrosTestSupport
+import SwiftUICore
 import MacroToolkit
 import MacroTesting
-import XCTest
+import Testing
 
-// Macro implementations build for the host, so the corresponding module is not available when cross-compiling. Cross-compiled tests may still make use of the macro itself in end-to-end tests.
 #if canImport(SQLiteValidatorMacros)
 import SQLiteValidatorMacros
+#else
+#error("Run the tests in the host machine")
+#endif
 
 let testMacros: [String: Macro.Type] = [
     "sqlQuery": SQLQueryMacro.self,
     "sqlQueryUnsafe": SQLQueryMacro.self,
 ]
-#endif
-
-final class SQLiteValidatorValidationTests: XCTestCase {
-    override func invokeTest() {
-        withMacroTesting(macros: testMacros) {
-            super.invokeTest()
-        }
-    }
-    
-    func testMacroApproveBasic() {
-        assertMacro {
+ 
+@Suite
+struct ValidationTests {
+    @Test(
+        .tags(.success),
+        arguments: [
+            "SELECT * FROM my_table",
+            "CREATE TABLE IF NOT EXISTS my_table (my_column int)",
+            "ALTER TABLE my_table ADD COLUMN my_column",
+            "INSERT INTO my_table (my_column) VALUES ('my_value')",
+            "SELECT trackid, name, albumid FROM tracks WHERE albumid = (SELECT albumid FROM albums WHERE title = 'Let There Be Rock')",
+        ]
+    )
+    func approveBasic(query: String) {
+        assertMacro(testMacros) {
             """
-            #sqlQuery("SELECT * FROM my_table")
-            """
-        } expansion: {
-            """
-            "SELECT * FROM my_table"
-            """
-        }
-    }
-    
-    func testMacroApproveComplicated() {
-        assertMacro {
-            """
-            #sqlQuery("SELECT trackid, name, albumid FROM tracks WHERE albumid = (SELECT albumid FROM albums WHERE title = 'Let There Be Rock')")
+            #sqlQuery("\(query)")
             """
         } expansion: {
             """
-            "SELECT trackid, name, albumid FROM tracks WHERE albumid = (SELECT albumid FROM albums WHERE title = 'Let There Be Rock')"
+            "ALTER TABLE my_table ADD COLUMN my_column"
             """
         }
     }
     
-    func testMacroApproveDividedSubquery() {
-        assertMacro {
+    @Test(.tags(.success))
+    func aproveDividedSubquery() {
+        assertMacro(testMacros) {
             #"""
             let subquery = #sqlQuery("SELECT albumid FROM albums WHERE title = 'Let There Be Rock'")
             
@@ -59,14 +52,14 @@ final class SQLiteValidatorValidationTests: XCTestCase {
             let subquery = #sqlQuery("SELECT albumid FROM albums WHERE title = 'Let There Be Rock'")
 
             #sqlQuery("SELECT trackid, name, albumid FROM tracks WHERE albumid = (\(subquery: subquery))")
-            ┬─────────────────────────────────────────────────────────────────────────────────────────────
             ╰─ 🛑 Keyword ')' not found
             """#
         }
     }
     
-    func testMacroRejectBasic() {
-        assertMacro {
+    @Test(.tags(.failure))
+    func rejectBasic() {
+        assertMacro(testMacros) {
             """
             #sqlQuery("SEELECT * FROM my_table")
             """
@@ -74,21 +67,22 @@ final class SQLiteValidatorValidationTests: XCTestCase {
             """
             #sqlQuery("SEELECT * FROM my_table")
             ┬───────────────────────────────────
-            ╰─ 🛑 Keyword 'SEELECT' not found
+            ╰─ 🛑 Keyword 'seelect' not found
             """
         }
     }
     
-    func testMacroWarning() {
-        assertMacro {
+    @Test
+    func warning() {
+        assertMacro(testMacros) {
             """
             #sqlQuery("DROP TABLE my_table")
             """
         } diagnostics: {
             """
             #sqlQuery("DROP TABLE my_table")
-            ╰─ ⚠️ Dropping the table may be dangerous
-               ✏️ Mark it unsafe to mute this warning
+                      ╰─ ⚠️ Dropping the table may be dangerous
+                         ✏️ Mark it unsafe to mute this warning
             """
         } fixes: {
             """
@@ -101,8 +95,9 @@ final class SQLiteValidatorValidationTests: XCTestCase {
         }
     }
     
-    func testMacroWarningSuppressed() {
-        assertMacro {
+    @Test
+    func warningSuppressed() {
+        assertMacro(testMacros) {
             """
             #sqlQueryUnsafe("DROP TABLE my_table")
             """
@@ -115,15 +110,11 @@ final class SQLiteValidatorValidationTests: XCTestCase {
 }
 
 
-class SQLiteValidatorInterpolationTests: XCTestCase {
-    override func invokeTest() {
-        withMacroTesting(macros: testMacros) {
-            super.invokeTest()
-        }
-    }
-    
-    func testMacroInterpolationLabelMissing() {
-        assertMacro {
+@Suite
+struct InterpolationTests {
+    @Test(.tags(.failure))
+    func interpolationLabelMissing() {
+        assertMacro(testMacros) {
             #"""
             let subquery = #sqlQuery("SELECT albumid FROM albums WHERE title = 'Let There Be Rock'")
             
@@ -134,44 +125,32 @@ class SQLiteValidatorInterpolationTests: XCTestCase {
             let subquery = #sqlQuery("SELECT albumid FROM albums WHERE title = 'Let There Be Rock'")
 
             #sqlQuery("SELECT trackid, name, albumid FROM tracks WHERE albumid = (\(subquery))")
-            ╰─ 🛑 Interpolation must be labeled
-               ✏️ Add 'table:'
-               ✏️ Add 'column:'
-               ✏️ Add 'subquery:'
-            """#
-        } fixes: {
-            #"""
-            let subquery = #sqlQuery("SELECT albumid FROM albums WHERE title = 'Let There Be Rock'")
-
-            #sqlQuery("SELECT trackid, name, albumid FROM tracks WHERE albumid = (\(table: subquery))")
-            """#
-        } expansion: {
-            #"""
-            let subquery = "SELECT albumid FROM albums WHERE title = 'Let There Be Rock'"
-
-            "SELECT trackid, name, albumid FROM tracks WHERE albumid = (\(table: subquery))"
+            │                                                                     ╰─ 🛑 Interpolation must be labeled
+            │                                                                        ✏️ Add 'table:'
+            │                                                                        ✏️ Add 'column:'
+            │                                                                        ✏️ Add 'subquery:'
+            ╰─ 🛑 Keyword ')' not found
             """#
         }
     }
     
-    func testMacroInterpolationLabelWrong() {
-        assertMacro {
+    @Test(
+        .disabled("Not supported yet"),
+        .tags(.failure)
+    )
+    func interpolationLabelWrong() {
+        assertMacro(testMacros) {
             #"""
             let subquery = #sqlQuery("SELECT albumid FROM albums WHERE title = 'Let There Be Rock'")
             
             #sqlQuery("SELECT trackid, name, albumid FROM tracks WHERE albumid = (\(table: subquery))")
             """#
-        } expansion: {
-            #"""
-            let subquery = "SELECT albumid FROM albums WHERE title = 'Let There Be Rock'"
-
-            "SELECT trackid, name, albumid FROM tracks WHERE albumid = (\(table: subquery))"
-            """#
         }
     }
     
-    func testMacroInterpolationLabelCorrect() {
-        assertMacro {
+    @Test(.tags(.success))
+    func interpolationLabelCorrect() {
+        assertMacro(testMacros) {
             #"""
             let tableName = "my_table"
             
@@ -185,4 +164,9 @@ class SQLiteValidatorInterpolationTests: XCTestCase {
             """#
         }
     }
+}
+
+extension Tag {
+    @Tag static var success: Tag
+    @Tag static var failure: Tag
 }

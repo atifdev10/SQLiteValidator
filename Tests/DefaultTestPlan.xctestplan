@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "93840C11-042F-4DAE-B686-0065FA9E6CC8",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "SQLiteValidatorTests",
+        "name" : "SQLiteValidatorTests"
+      }
+    }
+  ],
+  "version" : 1
+}

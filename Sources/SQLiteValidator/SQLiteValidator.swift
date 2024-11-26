@@ -61,10 +61,11 @@
 @freestanding(expression)
 public macro sqlQuery(_ query: String) -> String = #externalMacro(module: "SQLiteValidatorMacros", type: "SQLQueryMacro")
 
-/// This macro has the same function as the ``sqlQuery(_:)`` but the safety mechanisms are disabled.
+/// This macro has the same function as the ``sqlQuery(_:)`` but the secondary safety mechanisms are disabled.
 @freestanding(expression)
 public macro sqlQueryUnsafe(_ query: String) -> String = #sqlQuery(query)
 
+/// Interpolation for SQLite queries.
 public extension String.StringInterpolation {
     /// An interpolation for extracted table name from the query.
     mutating func appendInterpolation(table: String) {
