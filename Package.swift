@@ -12,6 +12,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/swiftlang/swift-syntax", from: "600.0.0"),
         .package(url: "https://github.com/pointfreeco/swift-macro-testing", from: "0.0.0"),
+        .package(url: "https://github.com/swiftlang/swift-testing", from: "6.0.0"),
         .package(url: "https://github.com/nicklockwood/SwiftFormat", from: "0.55.0"),
     ],
     targets: [
@@ -31,6 +32,7 @@ let package = Package(
                 "SQLiteValidatorMacros",
                 .product(name: "MacroTesting", package: "swift-macro-testing"),
                 .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
+                .product(name: "Testing", package: "swift-testing")
             ]
         ),
     ]

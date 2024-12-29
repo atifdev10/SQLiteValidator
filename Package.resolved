@@ -1,5 +1,4 @@
 {
-  "originHash" : "e368ece6db7d5adea468c8b4cf7db4f71f4330cf9e63e74a522aed48b805c908",
   "pins" : [
     {
       "identity" : "swift-macro-testing",
@@ -29,14 +28,23 @@
       }
     },
     {
+      "identity" : "swift-testing",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-testing",
+      "state" : {
+        "revision" : "18c42c19cac3fafd61cab1156d4088664b7424ae",
+        "version" : "6.0.3"
+      }
+    },
+    {
       "identity" : "swiftformat",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/nicklockwood/SwiftFormat",
       "state" : {
-        "revision" : "2d5a2b6bde636c1feae2c852ab9a50f221e98c66",
-        "version" : "0.55.3"
+        "revision" : "4e92b81311f528cfdca8015d629c650d0aff94ce",
+        "version" : "0.55.4"
       }
     }
   ],
-  "version" : 3
+  "version" : 2
 }
