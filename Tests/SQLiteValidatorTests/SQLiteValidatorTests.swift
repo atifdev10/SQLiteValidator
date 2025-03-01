@@ -14,11 +14,16 @@ let testMacros: [String: Macro.Type] = [
     "sqlQueryUnsafe": SQLQueryMacro.self,
 ]
 
-@Suite
+@Suite(
+    .macros(
+        record: .missing,
+        macros: testMacros
+    )
+)
 struct ValidationTests {
     @Test
     func queryApprove() {
-        assertMacro(testMacros) {
+        assertMacro {
             """
             #sqlQuery("INSERT INTO my_table (my_column) VALUES ('my_value')")
             """
@@ -31,7 +36,7 @@ struct ValidationTests {
 
     @Test
     func dividedSubqueryApprove() {
-        assertMacro(testMacros) {
+        assertMacro {
             #"""
             let subquery = #sqlQuery("SELECT albumid FROM albums WHERE title = 'Let There Be Rock'")
 
@@ -48,7 +53,7 @@ struct ValidationTests {
 
     @Test
     func queryTypoReject() {
-        assertMacro(testMacros) {
+        assertMacro {
             """
             #sqlQuery("SEELECT * FROM my_table")
             """
@@ -62,7 +67,7 @@ struct ValidationTests {
 
     @Test
     func queryIncompleteReject() {
-        assertMacro(testMacros) {
+        assertMacro {
             """
             #sqlQuery("SEELECT * FROM my_table")
             """
@@ -76,7 +81,7 @@ struct ValidationTests {
 
     @Test
     func queryTableNotSpecifiedReject() {
-        assertMacro(testMacros) {
+        assertMacro {
             """
             #sqlQuery("SEELECT * FROM my_table")
             """
@@ -90,7 +95,7 @@ struct ValidationTests {
 
     @Test
     func unsafeQueryWarning() {
-        assertMacro(testMacros) {
+        assertMacro {
             """
             #sqlQuery("DROP TABLE my_table")
             """
@@ -113,7 +118,7 @@ struct ValidationTests {
 
     @Test
     func unsafeQuerySuppressedWarning() {
-        assertMacro(testMacros) {
+        assertMacro {
             """
             #sqlQueryUnsafe("DROP TABLE my_table")
             """
