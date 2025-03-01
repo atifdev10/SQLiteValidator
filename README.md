@@ -27,7 +27,6 @@ let query = #sqlQuery("""
 ```
 
 ## How to use
-&nbsp;  
 This macro is easy to use. Call the macro and enter the query as a string. If the query has a syntax problem, it will give an error.
 If it doesn't have any, it will return the query you provided as a string without modifying it.
 
@@ -38,7 +37,6 @@ let query2 = #sqlQuery("ISNERT INTO my_table (column) VALUES (10)")   // 🛑 K
 let query3 = #sqlQuery("ALTER TABLE my_table RENAME TO")              // 🛑 Table not specified
 let query4 = #sqlQuery("SELECT DISTINCT column_list FROM table_list") // 🛑 Query incomplete
 ```
-&nbsp;  
 If the query is unsafe, it will warn you. You will need to mark it unsafe to mute the warning.  
 
 ```swift
@@ -46,7 +44,6 @@ let query5 = #sqlQuery("DROP TABLE IF EXISTS my_table") // ⚠️ Dropping the t
 
 let query6 = #sqlQueryUnsafe("DROP TABLE IF EXISTS my_table")
 ```
-&nbsp;  
 The macro supports dividing subqueries into seperate values. You can also separate clauses but it can't provide validaton for it.
 
 ```swift
